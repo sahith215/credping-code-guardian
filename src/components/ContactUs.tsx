@@ -158,7 +158,7 @@ const ContactUs: React.FC = () => {
 };
 
 interface SocialLinkProps {
-  icon: React.ComponentType<{ size?: number }>;
+  icon: React.ComponentType<any>;
   href: string;
   tooltip: string;
 }

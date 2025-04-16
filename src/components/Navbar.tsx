@@ -3,14 +3,34 @@ import { useState } from 'react';
 import { Menu, X, Users } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const scrollToSection = (sectionId: string) => {
+    // Close mobile menu if open
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+    }
+    
+    // If we're not on the home page, navigate there first
+    if (location.pathname !== '/') {
+      navigate('/', { state: { scrollTo: sectionId } });
+      return;
+    }
+    
+    // If already on home page, scroll to the section
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-credping-black/90 backdrop-blur-md border-b border-white/5 py-4 px-4 md:px-8">
@@ -22,7 +42,10 @@ const Navbar = () => {
         {/* Desktop Navigation */}
         {!isMobile && (
           <div className="flex gap-6 items-center">
-            <NavLinks currentPath={location.pathname} />
+            <NavLinks 
+              currentPath={location.pathname} 
+              scrollToSection={scrollToSection}
+            />
             <LoginButton />
           </div>
         )}
@@ -49,7 +72,11 @@ const Navbar = () => {
           }`}
         >
           <div className="flex flex-col p-6 gap-6">
-            <NavLinks currentPath={location.pathname} onClick={toggleMenu} />
+            <NavLinks 
+              currentPath={location.pathname} 
+              scrollToSection={scrollToSection}
+              onClick={toggleMenu}
+            />
             <LoginButton onClick={toggleMenu} />
           </div>
         </div>
@@ -71,10 +98,11 @@ const Logo = () => (
 
 interface NavLinksProps {
   currentPath: string;
+  scrollToSection: (sectionId: string) => void;
   onClick?: () => void;
 }
 
-const NavLinks = ({ currentPath, onClick }: NavLinksProps) => {
+const NavLinks = ({ currentPath, scrollToSection, onClick }: NavLinksProps) => {
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Detection', path: '/detection' },
@@ -96,13 +124,26 @@ const NavLinks = ({ currentPath, onClick }: NavLinksProps) => {
           
         return (
           <li key={item.name}>
-            <Link 
-              to={item.path} 
-              className={`nav-link ${isActive ? 'text-credping-green' : ''}`}
-              onClick={onClick}
-            >
-              {item.name}
-            </Link>
+            {isHashLink ? (
+              <a 
+                href="javascript:void(0)"
+                className={`nav-link ${isActive ? 'text-credping-green' : ''}`}
+                onClick={() => {
+                  scrollToSection(item.path.split('#')[1]);
+                  if (onClick) onClick();
+                }}
+              >
+                {item.name}
+              </a>
+            ) : (
+              <Link 
+                to={item.path} 
+                className={`nav-link ${isActive ? 'text-credping-green' : ''}`}
+                onClick={onClick}
+              >
+                {item.name}
+              </Link>
+            )}
           </li>
         );
       })}

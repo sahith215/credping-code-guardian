@@ -60,3 +60,13 @@
 .animate-pulse-green {
   animation: pulse 2s infinite;
 }
+
+/* 3D Card Styles */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
