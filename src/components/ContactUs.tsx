@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Mail, Phone, Linkedin, Github, Twitter, MessageSquare, Send } from 'lucide-react';
+import { Mail, Phone, Linkedin, Github, Twitter, MessageSquare, Send, Users2 } from 'lucide-react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
@@ -77,7 +77,7 @@ const ContactUs: React.FC = () => {
           {/* Social Media */}
           <div className="flex flex-col items-center text-center p-6 rounded-lg border border-white/5 bg-credping-black/40">
             <div className="bg-credping-green/10 p-4 rounded-full mb-4">
-              <Users className="text-credping-green" size={24} />
+              <Users2 className="text-credping-green" size={24} />
             </div>
             <h3 className="text-xl font-medium mb-2">Social Media</h3>
             <div className="flex space-x-4 mt-2">
@@ -158,7 +158,7 @@ const ContactUs: React.FC = () => {
 };
 
 interface SocialLinkProps {
-  icon: React.FC<React.SVGProps<SVGSVGElement>>;
+  icon: React.ComponentType<{ size?: number }>;
   href: string;
   tooltip: string;
 }
