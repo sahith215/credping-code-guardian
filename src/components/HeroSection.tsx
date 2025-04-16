@@ -2,13 +2,13 @@
 import { ArrowRight } from 'lucide-react';
 import React from 'react';
 import CodeAnimation from './CodeAnimation';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection: React.FC = () => {
-  const scrollToDetection = () => {
-    const detectionSection = document.getElementById('detection');
-    if (detectionSection) {
-      detectionSection.scrollIntoView({ behavior: 'smooth' });
-    }
+  const navigate = useNavigate();
+
+  const handleRedirectToDetection = () => {
+    navigate('/detection');
   };
 
   return (
@@ -45,7 +45,7 @@ const HeroSection: React.FC = () => {
           </p>
           
           <button 
-            onClick={scrollToDetection}
+            onClick={handleRedirectToDetection}
             className="cta-button flex items-center gap-2"
           >
             <span>Paste Code</span>

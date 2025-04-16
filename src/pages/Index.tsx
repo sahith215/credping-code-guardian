@@ -2,7 +2,7 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
-import DetectionSection from '@/components/DetectionSection';
+import FeatureCards from '@/components/FeatureCards';
 import AboutSection from '@/components/AboutSection';
 import StatsSection from '@/components/StatsSection';
 import Footer from '@/components/Footer';
@@ -12,7 +12,7 @@ const Index = () => {
     <div className="min-h-screen bg-credping-black text-white">
       <Navbar />
       <HeroSection />
-      <DetectionSection />
+      <FeatureCards />
       <AboutSection />
       <StatsSection />
       <Footer />
