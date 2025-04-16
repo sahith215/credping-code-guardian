@@ -3,8 +3,9 @@ import React from 'react';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import FeatureCards from '@/components/FeatureCards';
-import AboutSection from '@/components/AboutSection';
+import AboutUs from '@/components/AboutUs';
 import StatsSection from '@/components/StatsSection';
+import ContactUs from '@/components/ContactUs';
 import Footer from '@/components/Footer';
 
 const Index = () => {
@@ -13,8 +14,9 @@ const Index = () => {
       <Navbar />
       <HeroSection />
       <FeatureCards />
-      <AboutSection />
+      <AboutUs />
       <StatsSection />
+      <ContactUs />
       <Footer />
     </div>
   );

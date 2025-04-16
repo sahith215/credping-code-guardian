@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Users } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
@@ -85,9 +85,14 @@ const NavLinks = ({ currentPath, onClick }: NavLinksProps) => {
   return (
     <ul className="flex md:flex-row flex-col md:items-center gap-8">
       {navItems.map((item) => {
-        const isActive = 
-          item.path === '/' ? currentPath === '/' : 
-          currentPath.startsWith(item.path);
+        // Determine if this is a hash link on the home page
+        const isHashLink = item.path.includes('#');
+        
+        // For regular paths, check if current path starts with item path
+        // For hash links, check if we're on the home page
+        const isActive = isHashLink 
+          ? currentPath === '/' 
+          : currentPath.startsWith(item.path);
           
         return (
           <li key={item.name}>
