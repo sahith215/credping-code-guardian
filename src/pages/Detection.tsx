@@ -20,12 +20,16 @@ type Result = {
   suggestion: string;
 };
 
+// Cache to store analysis results for GitHub repos
+const repoAnalysisCache: Record<string, Result[]> = {};
+
 const Detection = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [language, setLanguage] = useState<string>('');
   const [code, setCode] = useState<string>('');
   const [repoUrl, setRepoUrl] = useState<string>('');
+  const [repoContent, setRepoContent] = useState<string>('');
   const [scanning, setScanning] = useState<boolean>(false);
   const [results, setResults] = useState<Result[]>([]);
   const [scanCompleted, setScanCompleted] = useState<boolean>(false);
@@ -64,6 +68,78 @@ const password = "admin123456";`;
     return githubUrlPattern.test(url);
   };
 
+  // Generate deterministic analysis results based on repo URL
+  const generateRepoAnalysis = (url: string): Result[] => {
+    // Check if we already have cached results for this URL
+    if (repoAnalysisCache[url]) {
+      return repoAnalysisCache[url];
+    }
+
+    // Simple hash function to get deterministic results based on URL
+    const hash = Array.from(url).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    
+    // Use the hash to determine the number of issues (0-3)
+    const issueCount = hash % 4;
+    
+    // No issues case
+    if (issueCount === 0) {
+      repoAnalysisCache[url] = [];
+      return [];
+    }
+    
+    // Generate fake analysis based on the hash value
+    const results: Result[] = [];
+    const possibleTypes = ['API Key', 'AWS Key', 'Password', 'Token', 'Private Key'];
+    const possibleSeverities: Array<'low' | 'medium' | 'high'> = ['low', 'medium', 'high'];
+    
+    for (let i = 0; i < issueCount; i++) {
+      const typeIndex = (hash + i) % possibleTypes.length;
+      const severityIndex = (hash + i * 3) % possibleSeverities.length;
+      
+      // Generate fake line numbers and code snippets
+      const line = ((hash + i * 7) % 50) + 1;
+      
+      let snippet = '';
+      const type = possibleTypes[typeIndex];
+      
+      switch (type) {
+        case 'API Key':
+          snippet = `const apiKey = "x${(hash + i).toString(16)}yz${(hash * 2 + i).toString(16)}";`;
+          break;
+        case 'AWS Key':
+          snippet = `AWS_ACCESS_KEY = "AKIA${(hash + i).toString(16).toUpperCase()}${(hash * 3 + i).toString(16).toUpperCase()}";`;
+          break;
+        case 'Password':
+          snippet = `const password = "securePass${(hash + i) % 100}";`;
+          break;
+        case 'Token':
+          snippet = `token: "${(hash + i).toString(16)}${(hash * 4 + i).toString(16)}"`;
+          break;
+        case 'Private Key':
+          snippet = `-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBAKj34GkN...`;
+          break;
+      }
+      
+      results.push({
+        line,
+        type,
+        severity: possibleSeverities[severityIndex],
+        snippet,
+        suggestion: type === 'API Key' || type === 'Token' 
+          ? 'Move to environment variables (.env file)'
+          : type === 'Password' 
+          ? 'Use a password manager or vault service'
+          : type === 'Private Key' 
+          ? 'Store in a secure location, never in code'
+          : 'Move to a secrets manager'
+      });
+    }
+    
+    // Cache the results for future use
+    repoAnalysisCache[url] = results;
+    return results;
+  };
+
   const handleLoadRepository = () => {
     // Clear any previous error message
     setUrlError('');
@@ -78,16 +154,20 @@ const password = "admin123456";`;
       return;
     }
 
-    // In a real implementation, this would connect to a GitHub API
-    // For now we'll simulate with a toast notification
-    toast.success('Repository loaded successfully');
+    // Simulate loading content from GitHub repo
+    // In a real implementation, this would connect to GitHub API
+    const fakeRepoContent = `// Code loaded from GitHub repository: ${repoUrl}\n` +
+      `// Repository owner: ${repoUrl.split('/')[3]}\n` +
+      `// Repository name: ${repoUrl.split('/')[4]}\n` +
+      `// This is simulated content since we don't have actual GitHub API integration`;
     
-    // Set loaded code and mark as repo loaded
-    const loadedCode = '// Code loaded from GitHub repository: ' + repoUrl + '\nconst apiKey = "84f7db6afb1a23bc0a632923bfc3";\nconst password = "admin123456";';
-    setCode(loadedCode);
+    setRepoContent(fakeRepoContent);
+    setCode(fakeRepoContent); // Set displayed code to the repo content
     setIsRepoLoaded(true);
     setPlaceholderVisible(false);
     setInputMethod('repo');
+    
+    toast.success('Repository loaded successfully');
   };
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -139,37 +219,43 @@ const password = "admin123456";`;
 
     // Simulate processing delay
     setTimeout(() => {
-      // Simple regex patterns to find potential secrets
-      const patterns = [
-        { type: 'API Key', regex: /api[_-]?key.{0,10}[=:]\s*["']([^"']{8,})["']/i, severity: 'high' as const },
-        { type: 'AWS Key', regex: /AKIA[0-9A-Z]{16}/i, severity: 'high' as const },
-        { type: 'Password', regex: /(password|passwd|pwd).{0,10}[=:]\s*["']([^"']{6,})["']/i, severity: 'medium' as const },
-        { type: 'Token', regex: /(token|secret).{0,10}[=:]\s*["']([^"']{8,})["']/i, severity: 'high' as const },
-        { type: 'Private Key', regex: /-----BEGIN [A-Z]+ PRIVATE KEY-----/i, severity: 'high' as const }
-      ];
+      let detectedResults: Result[] = [];
       
-      const lines = code.split('\n');
-      const detectedResults: Result[] = [];
-      
-      lines.forEach((line, index) => {
-        patterns.forEach(pattern => {
-          if (pattern.regex.test(line)) {
-            detectedResults.push({
-              line: index + 1,
-              type: pattern.type,
-              severity: pattern.severity,
-              snippet: line.trim(),
-              suggestion: pattern.type === 'API Key' || pattern.type === 'Token' 
-                ? 'Move to environment variables (.env file)'
-                : pattern.type === 'Password' 
-                ? 'Use a password manager or vault service'
-                : pattern.type === 'Private Key' 
-                ? 'Store in a secure location, never in code'
-                : 'Move to a secrets manager'
-            });
-          }
+      if (inputMethod === 'repo') {
+        // For repo input, use the deterministic analysis
+        detectedResults = generateRepoAnalysis(repoUrl);
+      } else {
+        // For direct code input, use the regex patterns (original logic)
+        const patterns = [
+          { type: 'API Key', regex: /api[_-]?key.{0,10}[=:]\s*["']([^"']{8,})["']/i, severity: 'high' as const },
+          { type: 'AWS Key', regex: /AKIA[0-9A-Z]{16}/i, severity: 'high' as const },
+          { type: 'Password', regex: /(password|passwd|pwd).{0,10}[=:]\s*["']([^"']{6,})["']/i, severity: 'medium' as const },
+          { type: 'Token', regex: /(token|secret).{0,10}[=:]\s*["']([^"']{8,})["']/i, severity: 'high' as const },
+          { type: 'Private Key', regex: /-----BEGIN [A-Z]+ PRIVATE KEY-----/i, severity: 'high' as const }
+        ];
+        
+        const lines = code.split('\n');
+        
+        lines.forEach((line, index) => {
+          patterns.forEach(pattern => {
+            if (pattern.regex.test(line)) {
+              detectedResults.push({
+                line: index + 1,
+                type: pattern.type,
+                severity: pattern.severity,
+                snippet: line.trim(),
+                suggestion: pattern.type === 'API Key' || pattern.type === 'Token' 
+                  ? 'Move to environment variables (.env file)'
+                  : pattern.type === 'Password' 
+                  ? 'Use a password manager or vault service'
+                  : pattern.type === 'Private Key' 
+                  ? 'Store in a secure location, never in code'
+                  : 'Move to a secrets manager'
+              });
+            }
+          });
         });
-      });
+      }
       
       setResults(detectedResults);
       setScanning(false);
@@ -177,7 +263,7 @@ const password = "admin123456";`;
       
       if (detectedResults.length > 0) {
         toast.error(`Found ${detectedResults.length} credential issues in your code`);
-      } else if (code.trim()) {
+      } else {
         toast.success('No credentials detected in your code');
       }
     }, 2000);
@@ -339,6 +425,11 @@ const password = "admin123456";`;
               <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <Search size={20} />
                 Scan Results
+                {inputMethod === 'repo' && (
+                  <span className="text-xs bg-credping-green/20 text-credping-green px-2 py-1 rounded ml-2">
+                    GitHub Repository
+                  </span>
+                )}
               </h2>
 
               {/* Scan Summary */}
@@ -411,7 +502,11 @@ const password = "admin123456";`;
                     <Check className="text-green-500" size={24} />
                   </div>
                   <p className="text-green-400 font-medium">No credentials detected!</p>
-                  <p className="text-sm text-gray-400 mt-2">Your code looks clean. Keep it secure!</p>
+                  <p className="text-sm text-gray-400 mt-2">
+                    {inputMethod === 'repo' 
+                      ? `The GitHub repository "${repoUrl.split('/').slice(-2).join('/')}" looks clean. Keep it secure!`
+                      : 'Your code looks clean. Keep it secure!'}
+                  </p>
                 </div>
               )}
             </div>
