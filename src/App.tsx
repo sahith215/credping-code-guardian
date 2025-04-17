@@ -19,7 +19,9 @@ const AnimatedRoutes = () => {
   
   // Scroll to top when location changes
   React.useEffect(() => {
-    window.scrollTo(0, 0);
+    if (!location.hash) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, [location.pathname]);
   
   return (

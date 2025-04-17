@@ -70,6 +70,16 @@
   transform-style: preserve-3d;
 }
 
+/* New Flip Card Styles */
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
 /* Smooth scrolling for page transitions */
 html {
   scroll-behavior: smooth;

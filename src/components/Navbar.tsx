@@ -12,7 +12,7 @@ const Navbar = () => {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  // Handle scroll to section from navigation
+  // Handle scroll to section from navigation - improved for smooth scrolling
   const scrollToSection = (sectionId: string) => {
     // Close mobile menu if open
     if (isMenuOpen) {
@@ -25,10 +25,13 @@ const Navbar = () => {
       return;
     }
     
-    // If already on home page, scroll to the section
+    // If already on home page, scroll to the section with enhanced smooth behavior
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
     }
   };
 
@@ -39,14 +42,9 @@ const Navbar = () => {
       setIsMenuOpen(false);
     }
     
-    // If already on detection page, just scroll to top
-    if (location.pathname === '/detection') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-    
-    // Otherwise navigate to detection page
+    // Always navigate to detection page and scroll to top
     navigate('/detection');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Handle URL with hashtag for direct section navigation
@@ -58,7 +56,10 @@ const Navbar = () => {
       if (element) {
         // Wait a bit for the page to render properly
         setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth' });
+          element.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
           // Clear the state so it doesn't re-scroll on page refresh
           navigate('/', { replace: true, state: {} });
         }, 100);
@@ -71,7 +72,10 @@ const Navbar = () => {
       const element = document.getElementById(id);
       if (element) {
         setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth' });
+          element.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
         }, 100);
       }
     }
