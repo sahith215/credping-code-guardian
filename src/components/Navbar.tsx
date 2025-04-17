@@ -155,9 +155,10 @@ const NavLinks = ({ currentPath, scrollToSection, onClick }: NavLinksProps) => {
           <li key={item.name}>
             {isHashLink ? (
               <a 
-                href="javascript:void(0)"
+                href={item.path}
                 className={`nav-link transition-colors duration-200 ${isActive ? 'text-credping-green' : 'text-white hover:text-credping-green'}`}
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
                   scrollToSection(item.path.split('#')[1]);
                   if (onClick) onClick();
                 }}

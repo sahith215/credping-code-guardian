@@ -31,6 +31,7 @@ const Detection = () => {
   const [scanCompleted, setScanCompleted] = useState<boolean>(false);
   const [urlError, setUrlError] = useState<string>('');
   const [isRepoLoaded, setIsRepoLoaded] = useState<boolean>(false);
+  const [placeholderVisible, setPlaceholderVisible] = useState<boolean>(true);
 
   const examplePlaceholder = `// Paste your code here to scan for credentials
 // Example of what we can detect:
@@ -42,6 +43,7 @@ const password = "admin123456";`;
   const handleClearCode = () => {
     setCode('');
     setIsRepoLoaded(false);
+    setPlaceholderVisible(true);
   };
 
   const handleCopyToClipboard = (text: string) => {
@@ -50,7 +52,7 @@ const password = "admin123456";`;
   };
 
   const validateGithubUrl = (url: string) => {
-    // Simple validation for GitHub URLs
+    // More robust validation for GitHub URLs
     const githubUrlPattern = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?.*$/i;
     return githubUrlPattern.test(url);
   };
@@ -74,8 +76,10 @@ const password = "admin123456";`;
     toast.success('Repository loaded successfully');
     
     // Set loaded code and mark as repo loaded
-    setCode('// Code loaded from GitHub repository: ' + repoUrl + '\nconst apiKey = "84f7db6afb1a23bc0a632923bfc3";\nconst password = "admin123456";');
+    const loadedCode = '// Code loaded from GitHub repository: ' + repoUrl + '\nconst apiKey = "84f7db6afb1a23bc0a632923bfc3";\nconst password = "admin123456";';
+    setCode(loadedCode);
     setIsRepoLoaded(true);
+    setPlaceholderVisible(false);
   };
 
   const handleScan = () => {
@@ -181,7 +185,7 @@ const password = "admin123456";`;
           <Button 
             onClick={handleBackNavigation} 
             variant="ghost" 
-            className="mb-6 text-gray-400 hover:text-white transition-colors"
+            className="mb-6 text-gray-400 hover:text-white transition-colors back-button"
           >
             <ArrowLeft className="mr-2" size={16} />
             Back
@@ -219,9 +223,16 @@ const password = "admin123456";`;
               <div className="relative">
                 <Textarea 
                   className="min-h-[200px] bg-credping-black border-credping-gray font-mono resize-none focus:border-credping-green focus:ring-1 focus:ring-credping-green/50 transition-all"
-                  placeholder={isRepoLoaded ? '' : examplePlaceholder}
+                  placeholder={placeholderVisible ? examplePlaceholder : ''}
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
+                  onChange={(e) => {
+                    setCode(e.target.value);
+                    if (e.target.value.trim() === '') {
+                      setPlaceholderVisible(true);
+                    } else {
+                      setPlaceholderVisible(false);
+                    }
+                  }}
                 />
                 {code && (
                   <button 
