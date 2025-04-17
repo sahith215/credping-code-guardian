@@ -32,6 +32,12 @@ const Detection = () => {
   const [urlError, setUrlError] = useState<string>('');
   const [isRepoLoaded, setIsRepoLoaded] = useState<boolean>(false);
   const [placeholderVisible, setPlaceholderVisible] = useState<boolean>(true);
+  const [inputMethod, setInputMethod] = useState<'code' | 'repo' | null>(null);
+  
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const examplePlaceholder = `// Paste your code here to scan for credentials
 // Example of what we can detect:
@@ -44,6 +50,7 @@ const password = "admin123456";`;
     setCode('');
     setIsRepoLoaded(false);
     setPlaceholderVisible(true);
+    setInputMethod(null);
   };
 
   const handleCopyToClipboard = (text: string) => {
@@ -80,6 +87,36 @@ const password = "admin123456";`;
     setCode(loadedCode);
     setIsRepoLoaded(true);
     setPlaceholderVisible(false);
+    setInputMethod('repo');
+  };
+
+  const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCode(e.target.value);
+    if (e.target.value.trim() === '') {
+      setPlaceholderVisible(true);
+      setInputMethod(null);
+    } else {
+      setPlaceholderVisible(false);
+      setInputMethod('code');
+      // Clear repo URL if user starts typing code
+      if (repoUrl) {
+        setRepoUrl('');
+        setIsRepoLoaded(false);
+      }
+    }
+  };
+
+  const handleRepoUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRepoUrl(e.target.value);
+    setUrlError('');
+    
+    if (e.target.value.trim() !== '') {
+      // Clear code area if user enters a repo URL
+      if (code && inputMethod === 'code') {
+        setCode('');
+        setPlaceholderVisible(true);
+      }
+    }
   };
 
   const handleScan = () => {
@@ -180,7 +217,7 @@ const password = "admin123456";`;
     <div className="min-h-screen bg-credping-black text-white flex flex-col">
       <Navbar />
       
-      <main className="flex-grow pt-24 pb-16 px-4">
+      <main className="flex-grow pt-24 pb-16 px-4 page-transition">
         <div className="container max-w-4xl mx-auto">
           <Button 
             onClick={handleBackNavigation} 
@@ -218,32 +255,32 @@ const password = "admin123456";`;
             </div>
 
             {/* Step 2: Code Paste Area */}
-            <div className="mb-6 relative">
+            <div className={`mb-6 relative ${inputMethod === 'repo' ? 'opacity-50 pointer-events-none' : ''}`}>
               <label className="block text-sm font-medium mb-2">Paste Your Code</label>
               <div className="relative">
                 <Textarea 
                   className="min-h-[200px] bg-credping-black border-credping-gray font-mono resize-none focus:border-credping-green focus:ring-1 focus:ring-credping-green/50 transition-all"
                   placeholder={placeholderVisible ? examplePlaceholder : ''}
                   value={code}
-                  onChange={(e) => {
-                    setCode(e.target.value);
-                    if (e.target.value.trim() === '') {
-                      setPlaceholderVisible(true);
-                    } else {
-                      setPlaceholderVisible(false);
-                    }
-                  }}
+                  onChange={handleCodeChange}
+                  disabled={inputMethod === 'repo'}
                 />
                 {code && (
                   <button 
                     className="absolute top-3 right-3 p-1 rounded-full bg-credping-gray hover:bg-credping-gray/80 transition-colors"
                     onClick={handleClearCode}
                     aria-label="Clear code"
+                    disabled={inputMethod === 'repo'}
                   >
                     <X size={16} />
                   </button>
                 )}
               </div>
+              {inputMethod === 'repo' && (
+                <div className="mt-2 text-sm text-gray-400">
+                  <p>Code input is disabled while using GitHub repository.</p>
+                </div>
+              )}
             </div>
 
             {/* Divider */}
@@ -254,21 +291,20 @@ const password = "admin123456";`;
             </div>
 
             {/* Step 3: GitHub Repository */}
-            <div className="mb-6">
+            <div className={`mb-6 ${inputMethod === 'code' ? 'opacity-50 pointer-events-none' : ''}`}>
               <label className="block text-sm font-medium mb-2">GitHub Repository</label>
               <div className="flex gap-3">
                 <Input
                   className="flex-grow bg-credping-black border-credping-gray focus:border-credping-green focus:ring-1 focus:ring-credping-green/50 transition-all"
                   placeholder="Enter your GitHub repository URL"
                   value={repoUrl}
-                  onChange={(e) => {
-                    setRepoUrl(e.target.value);
-                    setUrlError(''); // Clear error when input changes
-                  }}
+                  onChange={handleRepoUrlChange}
+                  disabled={inputMethod === 'code'}
                 />
                 <Button 
                   className="bg-credping-black border border-credping-green/50 text-credping-green hover:bg-credping-green/10"
                   onClick={handleLoadRepository}
+                  disabled={inputMethod === 'code' || !repoUrl.trim()}
                 >
                   <Github size={16} className="mr-2" />
                   Load
@@ -278,6 +314,11 @@ const password = "admin123456";`;
                 <Alert variant="destructive" className="mt-2 bg-red-900/20 border-red-500/30 text-red-300">
                   <AlertDescription>{urlError}</AlertDescription>
                 </Alert>
+              )}
+              {inputMethod === 'code' && (
+                <div className="mt-2 text-sm text-gray-400">
+                  <p>GitHub repository input is disabled while using code input.</p>
+                </div>
               )}
             </div>
 

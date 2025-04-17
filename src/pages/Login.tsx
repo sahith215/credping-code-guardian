@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, AtSign, User, Github, Twitter } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, AtSign, User, Github, Twitter, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +20,11 @@ const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
@@ -79,6 +84,11 @@ const Login = () => {
     fileInputRef.current?.click();
   };
 
+  // Go back to previous page
+  const handleBackNavigation = () => {
+    navigate(-1);
+  };
+
   // Calculate card transform style based on mouse position
   const cardStyle = {
     transform: `perspective(1000px) rotateY(${cardPosition.x * 10}deg) rotateX(${-cardPosition.y * 10}deg) translateZ(20px)`,
@@ -94,7 +104,18 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-credping-black flex justify-center items-center p-4 md:p-8">
+    <div className="min-h-screen bg-credping-black flex flex-col justify-center items-center p-4 md:p-8 page-transition">
+      <div className="container max-w-4xl mx-auto">
+        <Button 
+          onClick={handleBackNavigation} 
+          variant="ghost" 
+          className="mb-6 text-gray-400 hover:text-white transition-colors back-button absolute top-6 left-6"
+        >
+          <ArrowLeft className="mr-2" size={16} />
+          Back
+        </Button>
+      </div>
+      
       <div 
         ref={cardRef}
         className="perspective-1000 w-full max-w-md"

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -31,6 +30,23 @@ const Navbar = () => {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  // Handle navigation to Detection page
+  const navigateToDetection = () => {
+    // Close mobile menu if open
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+    }
+    
+    // If already on detection page, just scroll to top
+    if (location.pathname === '/detection') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    
+    // Otherwise navigate to detection page
+    navigate('/detection');
   };
 
   // Handle URL with hashtag for direct section navigation
@@ -74,6 +90,7 @@ const Navbar = () => {
             <NavLinks 
               currentPath={location.pathname} 
               scrollToSection={scrollToSection}
+              navigateToDetection={navigateToDetection}
             />
             <LoginButton />
           </div>
@@ -104,6 +121,7 @@ const Navbar = () => {
             <NavLinks 
               currentPath={location.pathname} 
               scrollToSection={scrollToSection}
+              navigateToDetection={navigateToDetection}
               onClick={toggleMenu}
             />
             <LoginButton onClick={toggleMenu} />
@@ -128,10 +146,11 @@ const Logo = () => (
 interface NavLinksProps {
   currentPath: string;
   scrollToSection: (sectionId: string) => void;
+  navigateToDetection: () => void;
   onClick?: () => void;
 }
 
-const NavLinks = ({ currentPath, scrollToSection, onClick }: NavLinksProps) => {
+const NavLinks = ({ currentPath, scrollToSection, navigateToDetection, onClick }: NavLinksProps) => {
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Detection', path: '/detection' },
@@ -144,6 +163,7 @@ const NavLinks = ({ currentPath, scrollToSection, onClick }: NavLinksProps) => {
       {navItems.map((item) => {
         // Determine if this is a hash link on the home page
         const isHashLink = item.path.includes('#');
+        const isDetectionLink = item.path === '/detection';
         
         // For regular paths, check if current path starts with item path
         // For hash links, check if we're on the home page
@@ -160,6 +180,18 @@ const NavLinks = ({ currentPath, scrollToSection, onClick }: NavLinksProps) => {
                 onClick={(e) => {
                   e.preventDefault();
                   scrollToSection(item.path.split('#')[1]);
+                  if (onClick) onClick();
+                }}
+              >
+                {item.name}
+              </a>
+            ) : isDetectionLink ? (
+              <a
+                href={item.path}
+                className={`nav-link transition-colors duration-200 ${isActive ? 'text-credping-green' : 'text-white hover:text-credping-green'}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateToDetection();
                   if (onClick) onClick();
                 }}
               >
