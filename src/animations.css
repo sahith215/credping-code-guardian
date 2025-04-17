@@ -70,3 +70,21 @@
   transform-style: preserve-3d;
 }
 
+/* Smooth scrolling for page transitions */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Page transition animations */
+.page-transition {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Back button animation */
+.back-button {
+  transition: transform 0.2s ease;
+}
+
+.back-button:hover {
+  transform: translateX(-3px);
+}

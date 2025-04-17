@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -8,8 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Search, X, AlertTriangle, Check, Copy, Download, Github, ExternalLink, ChevronDown } from 'lucide-react';
+import { Search, X, AlertTriangle, Check, Copy, Download, Github, ExternalLink, ChevronDown, ArrowLeft } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type Result = {
   line: number;
@@ -21,15 +22,26 @@ type Result = {
 
 const Detection = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [language, setLanguage] = useState<string>('');
   const [code, setCode] = useState<string>('');
   const [repoUrl, setRepoUrl] = useState<string>('');
   const [scanning, setScanning] = useState<boolean>(false);
   const [results, setResults] = useState<Result[]>([]);
   const [scanCompleted, setScanCompleted] = useState<boolean>(false);
+  const [urlError, setUrlError] = useState<string>('');
+  const [isRepoLoaded, setIsRepoLoaded] = useState<boolean>(false);
+
+  const examplePlaceholder = `// Paste your code here to scan for credentials
+// Example of what we can detect:
+
+const apiKey = "84f7db6afb1a23bc0a632923bfc3";
+AWS_SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
+const password = "admin123456";`;
 
   const handleClearCode = () => {
     setCode('');
+    setIsRepoLoaded(false);
   };
 
   const handleCopyToClipboard = (text: string) => {
@@ -37,21 +49,46 @@ const Detection = () => {
     toast.success('Copied to clipboard');
   };
 
+  const validateGithubUrl = (url: string) => {
+    // Simple validation for GitHub URLs
+    const githubUrlPattern = /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w.-]+\/?.*$/i;
+    return githubUrlPattern.test(url);
+  };
+
   const handleLoadRepository = () => {
+    // Clear any previous error message
+    setUrlError('');
+    
     if (!repoUrl.trim()) {
-      toast.error('Please enter a valid GitHub repository URL');
+      setUrlError('Please enter a GitHub repository URL');
+      return;
+    }
+
+    if (!validateGithubUrl(repoUrl.trim())) {
+      setUrlError('Please enter a valid GitHub repository URL');
       return;
     }
 
     // In a real implementation, this would connect to a GitHub API
     // For now we'll simulate with a toast notification
     toast.success('Repository loaded successfully');
-    setCode('// Example code loaded from GitHub\nconst apiKey = "84f7db6afb1a23bc0a632923bfc3";\nconst password = "admin123456";');
+    
+    // Set loaded code and mark as repo loaded
+    setCode('// Code loaded from GitHub repository: ' + repoUrl + '\nconst apiKey = "84f7db6afb1a23bc0a632923bfc3";\nconst password = "admin123456";');
+    setIsRepoLoaded(true);
   };
 
   const handleScan = () => {
+    // Clear previous error if any
+    setUrlError('');
+    
     if (!code.trim() && !repoUrl.trim()) {
       toast.error('Please paste code or provide a GitHub repository URL');
+      return;
+    }
+
+    if (repoUrl.trim() && !isRepoLoaded) {
+      setUrlError('Please load the repository before scanning');
       return;
     }
 
@@ -105,6 +142,10 @@ const Detection = () => {
     }, 2000);
   };
 
+  const handleBackNavigation = () => {
+    navigate(-1);
+  };
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'low':
@@ -131,19 +172,21 @@ const Detection = () => {
     }
   };
 
-  const examplePlaceholder = `// Paste your code here to scan for credentials
-// Example of what we can detect:
-
-const apiKey = "84f7db6afb1a23bc0a632923bfc3";
-AWS_SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
-const password = "admin123456";`;
-
   return (
     <div className="min-h-screen bg-credping-black text-white flex flex-col">
       <Navbar />
       
       <main className="flex-grow pt-24 pb-16 px-4">
         <div className="container max-w-4xl mx-auto">
+          <Button 
+            onClick={handleBackNavigation} 
+            variant="ghost" 
+            className="mb-6 text-gray-400 hover:text-white transition-colors"
+          >
+            <ArrowLeft className="mr-2" size={16} />
+            Back
+          </Button>
+          
           <h1 className="text-3xl md:text-4xl font-bold mb-2 text-center">
             <span className="text-credping-green">Credential</span> Detection
           </h1>
@@ -176,7 +219,7 @@ const password = "admin123456";`;
               <div className="relative">
                 <Textarea 
                   className="min-h-[200px] bg-credping-black border-credping-gray font-mono resize-none focus:border-credping-green focus:ring-1 focus:ring-credping-green/50 transition-all"
-                  placeholder={examplePlaceholder}
+                  placeholder={isRepoLoaded ? '' : examplePlaceholder}
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                 />
@@ -207,7 +250,10 @@ const password = "admin123456";`;
                   className="flex-grow bg-credping-black border-credping-gray focus:border-credping-green focus:ring-1 focus:ring-credping-green/50 transition-all"
                   placeholder="Enter your GitHub repository URL"
                   value={repoUrl}
-                  onChange={(e) => setRepoUrl(e.target.value)}
+                  onChange={(e) => {
+                    setRepoUrl(e.target.value);
+                    setUrlError(''); // Clear error when input changes
+                  }}
                 />
                 <Button 
                   className="bg-credping-black border border-credping-green/50 text-credping-green hover:bg-credping-green/10"
@@ -217,6 +263,11 @@ const password = "admin123456";`;
                   Load
                 </Button>
               </div>
+              {urlError && (
+                <Alert variant="destructive" className="mt-2 bg-red-900/20 border-red-500/30 text-red-300">
+                  <AlertDescription>{urlError}</AlertDescription>
+                </Alert>
+              )}
             </div>
 
             {/* Step 4: Scan Button */}

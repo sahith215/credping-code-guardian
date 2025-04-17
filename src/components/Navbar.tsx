@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { Menu, X, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ const Navbar = () => {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
+  // Handle scroll to section from navigation
   const scrollToSection = (sectionId: string) => {
     // Close mobile menu if open
     if (isMenuOpen) {
@@ -31,6 +32,34 @@ const Navbar = () => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  // Handle URL with hashtag for direct section navigation
+  useEffect(() => {
+    // Check for location state with scrollTo parameter
+    if (location.state && location.state.scrollTo) {
+      const sectionId = location.state.scrollTo;
+      const element = document.getElementById(sectionId);
+      if (element) {
+        // Wait a bit for the page to render properly
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+          // Clear the state so it doesn't re-scroll on page refresh
+          navigate('/', { replace: true, state: {} });
+        }, 100);
+      }
+    }
+    
+    // Also handle direct URL with hash
+    if (location.hash && location.pathname === '/') {
+      const id = location.hash.substring(1);
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [location, navigate]);
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-credping-black/90 backdrop-blur-md border-b border-white/5 py-4 px-4 md:px-8">
@@ -127,7 +156,7 @@ const NavLinks = ({ currentPath, scrollToSection, onClick }: NavLinksProps) => {
             {isHashLink ? (
               <a 
                 href="javascript:void(0)"
-                className={`nav-link ${isActive ? 'text-credping-green' : ''}`}
+                className={`nav-link transition-colors duration-200 ${isActive ? 'text-credping-green' : 'text-white hover:text-credping-green'}`}
                 onClick={() => {
                   scrollToSection(item.path.split('#')[1]);
                   if (onClick) onClick();
@@ -138,7 +167,7 @@ const NavLinks = ({ currentPath, scrollToSection, onClick }: NavLinksProps) => {
             ) : (
               <Link 
                 to={item.path} 
-                className={`nav-link ${isActive ? 'text-credping-green' : ''}`}
+                className={`nav-link transition-colors duration-200 ${isActive ? 'text-credping-green' : 'text-white hover:text-credping-green'}`}
                 onClick={onClick}
               >
                 {item.name}
