@@ -4,12 +4,10 @@ import { useLocation } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import FeatureCards from '@/components/FeatureCards';
-import ContactUs from '@/components/ContactUs';
 import Footer from '@/components/Footer';
 
 const Index = () => {
   const location = useLocation();
-  const contactRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     // Handle hash in URL for direct section navigation
@@ -46,9 +44,6 @@ const Index = () => {
       <div className="page-transition">
         <HeroSection />
         <FeatureCards />
-        <div id="contact" ref={contactRef}>
-          <ContactUs />
-        </div>
       </div>
       <Footer />
     </div>

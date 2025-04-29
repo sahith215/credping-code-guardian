@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -36,7 +35,7 @@ const Navbar = () => {
     }
   };
 
-  // Handle navigation to Detection or About page
+  // Handle navigation to pages
   const navigateToPage = (path: string) => {
     // Close mobile menu if open
     if (isMenuOpen) {
@@ -160,57 +159,27 @@ const NavLinks = ({ currentPath, scrollToSection, navigateToPage, onClick }: Nav
     { name: 'Home', path: '/' },
     { name: 'Detection', path: '/detection' },
     { name: 'About', path: '/about' },
-    { name: 'Contact', path: '/#contact' },
+    { name: 'Contact', path: '/contact' },
   ];
 
   return (
     <ul className="flex md:flex-row flex-col md:items-center gap-8">
       {navItems.map((item) => {
-        // Determine if this is a hash link on the home page
-        const isHashLink = item.path.includes('#');
-        const isDirectPage = !isHashLink && item.path !== '/';
-        
-        // For regular paths, check if current path starts with item path
-        // For hash links, check if we're on the home page
-        const isActive = isHashLink 
-          ? currentPath === '/' 
-          : currentPath === item.path;
+        const isActive = currentPath === item.path;
           
         return (
           <li key={item.name}>
-            {isHashLink ? (
-              <a 
-                href={item.path}
-                className={`nav-link transition-colors duration-200 ${isActive ? 'text-credping-green' : 'text-white hover:text-credping-green'}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToSection(item.path.split('#')[1]);
-                  if (onClick) onClick();
-                }}
-              >
-                {item.name}
-              </a>
-            ) : isDirectPage ? (
-              <a
-                href={item.path}
-                className={`nav-link transition-colors duration-200 ${currentPath === item.path ? 'text-credping-green' : 'text-white hover:text-credping-green'}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateToPage(item.path);
-                  if (onClick) onClick();
-                }}
-              >
-                {item.name}
-              </a>
-            ) : (
-              <Link 
-                to={item.path} 
-                className={`nav-link transition-colors duration-200 ${isActive ? 'text-credping-green' : 'text-white hover:text-credping-green'}`}
-                onClick={onClick}
-              >
-                {item.name}
-              </Link>
-            )}
+            <a
+              href={item.path}
+              className={`nav-link transition-colors duration-200 ${isActive ? 'text-credping-green' : 'text-white hover:text-credping-green'}`}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateToPage(item.path);
+                if (onClick) onClick();
+              }}
+            >
+              {item.name}
+            </a>
           </li>
         );
       })}

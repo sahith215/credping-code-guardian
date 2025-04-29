@@ -27,7 +27,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-3">
               {['Home', 'Detection', 'About', 'Contact'].map((item) => (
                 <li key={item}>
-                  <a href={`#${item.toLowerCase()}`} className="text-muted-foreground hover:text-credping-green transition-colors">
+                  <a href={`/${item.toLowerCase() === 'home' ? '' : item.toLowerCase()}`} className="text-muted-foreground hover:text-credping-green transition-colors">
                     {item}
                   </a>
                 </li>
@@ -76,12 +76,6 @@ const Footer: React.FC = () => {
           <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} CredPing. All rights reserved.
           </p>
-          
-          <div className="mt-4 md:mt-0">
-            <div className="inline-block px-3 py-1 bg-credping-green/10 border border-credping-green/20 rounded-full text-xs text-credping-green">
-              Built for Bharat Hackathon 2025
-            </div>
-          </div>
         </div>
       </div>
     </footer>

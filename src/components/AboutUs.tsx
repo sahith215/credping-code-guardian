@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Shield, Zap, Code, FileText, Users } from 'lucide-react';
+import { Shield, Zap, Code, FileText, Users, Cpu } from 'lucide-react';
 
 const AboutUs: React.FC = () => {
   return (
@@ -80,6 +80,15 @@ const aboutCards = [
       "Real-time detection",
       "Privacy-first design",
       "Built by devs, for devs"
+    ]
+  },
+  {
+    icon: Cpu,
+    title: "Our Technology",
+    content: [
+      "Advanced pattern recognition",
+      "Low false positive rate",
+      "Continuous improvement"
     ]
   }
 ];
