@@ -9,6 +9,7 @@ import './animations.css'; // Import animations css
 import Index from "./pages/Index";
 import Detection from "./pages/Detection";
 import Login from "./pages/Login";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<Index />} />
         <Route path="/detection" element={<Detection />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/about" element={<About />} />
         {/* Placeholder for future dashboard page */}
         <Route path="/dashboard" element={<div className="min-h-screen flex items-center justify-center bg-credping-black text-white">Dashboard Page (Coming Soon)</div>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

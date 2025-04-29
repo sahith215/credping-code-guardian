@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -35,15 +36,15 @@ const Navbar = () => {
     }
   };
 
-  // Handle navigation to Detection page
-  const navigateToDetection = () => {
+  // Handle navigation to Detection or About page
+  const navigateToPage = (path: string) => {
     // Close mobile menu if open
     if (isMenuOpen) {
       setIsMenuOpen(false);
     }
     
-    // Always navigate to detection page and scroll to top
-    navigate('/detection');
+    // Navigate to the specified page and scroll to top
+    navigate(path);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -94,7 +95,7 @@ const Navbar = () => {
             <NavLinks 
               currentPath={location.pathname} 
               scrollToSection={scrollToSection}
-              navigateToDetection={navigateToDetection}
+              navigateToPage={navigateToPage}
             />
             <LoginButton />
           </div>
@@ -125,7 +126,7 @@ const Navbar = () => {
             <NavLinks 
               currentPath={location.pathname} 
               scrollToSection={scrollToSection}
-              navigateToDetection={navigateToDetection}
+              navigateToPage={navigateToPage}
               onClick={toggleMenu}
             />
             <LoginButton onClick={toggleMenu} />
@@ -150,15 +151,15 @@ const Logo = () => (
 interface NavLinksProps {
   currentPath: string;
   scrollToSection: (sectionId: string) => void;
-  navigateToDetection: () => void;
+  navigateToPage: (path: string) => void;
   onClick?: () => void;
 }
 
-const NavLinks = ({ currentPath, scrollToSection, navigateToDetection, onClick }: NavLinksProps) => {
+const NavLinks = ({ currentPath, scrollToSection, navigateToPage, onClick }: NavLinksProps) => {
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Detection', path: '/detection' },
-    { name: 'About', path: '/#about' },
+    { name: 'About', path: '/about' },
     { name: 'Contact', path: '/#contact' },
   ];
 
@@ -167,13 +168,13 @@ const NavLinks = ({ currentPath, scrollToSection, navigateToDetection, onClick }
       {navItems.map((item) => {
         // Determine if this is a hash link on the home page
         const isHashLink = item.path.includes('#');
-        const isDetectionLink = item.path === '/detection';
+        const isDirectPage = !isHashLink && item.path !== '/';
         
         // For regular paths, check if current path starts with item path
         // For hash links, check if we're on the home page
         const isActive = isHashLink 
           ? currentPath === '/' 
-          : currentPath.startsWith(item.path);
+          : currentPath === item.path;
           
         return (
           <li key={item.name}>
@@ -189,13 +190,13 @@ const NavLinks = ({ currentPath, scrollToSection, navigateToDetection, onClick }
               >
                 {item.name}
               </a>
-            ) : isDetectionLink ? (
+            ) : isDirectPage ? (
               <a
                 href={item.path}
-                className={`nav-link transition-colors duration-200 ${isActive ? 'text-credping-green' : 'text-white hover:text-credping-green'}`}
+                className={`nav-link transition-colors duration-200 ${currentPath === item.path ? 'text-credping-green' : 'text-white hover:text-credping-green'}`}
                 onClick={(e) => {
                   e.preventDefault();
-                  navigateToDetection();
+                  navigateToPage(item.path);
                   if (onClick) onClick();
                 }}
               >

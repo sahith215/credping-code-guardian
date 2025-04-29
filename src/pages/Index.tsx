@@ -4,14 +4,11 @@ import { useLocation } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import FeatureCards from '@/components/FeatureCards';
-import AboutUs from '@/components/AboutUs';
-import StatsSection from '@/components/StatsSection';
 import ContactUs from '@/components/ContactUs';
 import Footer from '@/components/Footer';
 
 const Index = () => {
   const location = useLocation();
-  const aboutRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -49,10 +46,6 @@ const Index = () => {
       <div className="page-transition">
         <HeroSection />
         <FeatureCards />
-        <div id="about" ref={aboutRef}>
-          <AboutUs />
-        </div>
-        <StatsSection />
         <div id="contact" ref={contactRef}>
           <ContactUs />
         </div>
