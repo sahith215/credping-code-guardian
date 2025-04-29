@@ -22,10 +22,11 @@ const CodeAnimation: React.FC = () => {
   ];
 
   // Define which lines contain sensitive data and what type
+  // Removed line 10 (DATABASE_URL) from sensitive lines
   const sensitiveLines = [
     { lineIndex: 4, type: "API Key", value: "84f7db6afb1a23bc0a632923bfc3" },
     { lineIndex: 9, type: "AWS Secret", value: "AKIAIOSFODNN7EXAMPLE" },
-    { lineIndex: 10, type: "Database Credentials", value: "postgres://user:password@localhost/db" }
+    // Database URL line removed from sensitive detection
   ];
 
   // Simulate code scanning animation
