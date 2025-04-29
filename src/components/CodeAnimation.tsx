@@ -5,12 +5,35 @@ import { Shield, AlertCircle } from 'lucide-react';
 const CodeAnimation: React.FC = () => {
   const [highlightLine, setHighlightLine] = useState<number | null>(null);
   const [showAlert, setShowAlert] = useState(false);
+  
+  // Code lines with sensitive data clearly marked
+  const codeLines = [
+    'import requests',
+    'from django.conf import settings',
+    '',
+    'def get_weather_data(city):',
+    '    api_key = "84f7db6afb1a23bc0a632923bfc3"',
+    '    url = f"https://api.weather.com/data/{api_key}"',
+    '    response = requests.get(url)',
+    '    return response.json()',
+    '',
+    'AWS_SECRET = "AKIAIOSFODNN7EXAMPLE"',
+    'DATABASE_URL = "postgres://user:password@localhost/db"'
+  ];
+
+  // Define which lines contain sensitive data and what type
+  const sensitiveLines = [
+    { lineIndex: 4, type: "API Key", value: "84f7db6afb1a23bc0a632923bfc3" },
+    { lineIndex: 9, type: "AWS Secret", value: "AKIAIOSFODNN7EXAMPLE" },
+    { lineIndex: 10, type: "Database Credentials", value: "postgres://user:password@localhost/db" }
+  ];
 
   // Simulate code scanning animation
   useEffect(() => {
     const interval = setInterval(() => {
-      const randomLine = Math.floor(Math.random() * 10) + 1;
-      setHighlightLine(randomLine);
+      // Only flag sensitive lines
+      const randomSensitiveLine = sensitiveLines[Math.floor(Math.random() * sensitiveLines.length)];
+      setHighlightLine(randomSensitiveLine.lineIndex);
       
       // Show alert after a short delay
       setTimeout(() => {
@@ -27,19 +50,13 @@ const CodeAnimation: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const codeLines = [
-    'import requests',
-    'from django.conf import settings',
-    '',
-    'def get_weather_data(city):',
-    '    api_key = "84f7db6afb1a23bc0a632923bfc3"',
-    '    url = f"https://api.weather.com/data/{api_key}"',
-    '    response = requests.get(url)',
-    '    return response.json()',
-    '',
-    'AWS_SECRET = "AKIAIOSFODNN7EXAMPLE"',
-    'DATABASE_URL = "postgres://user:password@localhost/db"'
-  ];
+  // Get sensitive data info for currently highlighted line
+  const getSensitiveInfo = () => {
+    if (highlightLine === null) return null;
+    return sensitiveLines.find(line => line.lineIndex === highlightLine);
+  };
+
+  const sensitiveInfo = getSensitiveInfo();
 
   return (
     <div className="relative">
@@ -64,16 +81,18 @@ const CodeAnimation: React.FC = () => {
         </div>
       </div>
       
-      {/* Alert popup */}
-      {showAlert && (
+      {/* Alert popup with specific sensitive data details */}
+      {showAlert && sensitiveInfo && (
         <div className="absolute -top-4 -right-4 bg-credping-black border border-red-500 shadow-lg p-4 rounded-lg animate-fade-in w-64">
           <div className="flex items-start gap-2">
             <AlertCircle className="text-red-500 shrink-0 mt-1" size={20} />
             <div>
-              <p className="font-medium text-red-500">API Key Exposed!</p>
-              <p className="text-sm text-gray-300 mt-1">Found credentials at line {highlightLine! + 1}</p>
+              <p className="font-medium text-red-500">{sensitiveInfo.type} Exposed!</p>
+              <p className="text-sm text-gray-300 mt-1">Found credentials at line {sensitiveInfo.lineIndex + 1}</p>
               <div className="bg-red-950/30 p-2 rounded mt-2 text-xs">
-                <code className="text-red-400">Replace with environment variable: {`${'{'}process.env.API_KEY{'}'}`}</code>
+                <code className="text-red-400">
+                  Replace with environment variable: {`${'{'}process.env.${sensitiveInfo.type.replace(/\s+/g, '_').toUpperCase()}{'}'}`}
+                </code>
               </div>
             </div>
           </div>
